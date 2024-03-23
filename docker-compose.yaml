@@ -1,0 +1,48 @@
+version: "3"
+# k2
+services:
+    db:
+        image: mysql:5.7
+        restart: always
+        volumes:
+            - ./master.cnf:/etc/my.cnf
+        environment:
+            MYSQL_ROOT_PASSWORD: redhat
+            MYSQL_DATABASE: wordpress
+            MYSQL_USER: wpuser
+            MYSQL_PASSWORD: redhat
+        
+
+    wp1:
+        image: wordpress
+        restart: always
+        links: 
+            - db:db
+        environment:
+            WORDPRESS_DB_HOST: db
+            WORDPRESS_DB_USER: wpuser
+            WORDPRESS_DB_PASSWORD: redhat
+            WORDPRESS_DB_NAME: wordpress
+            WORDPRESS_DB_PREFIX: kk_
+    wp2:
+        image: wordpress
+        restart: always
+        links: 
+            - db:db
+        environment:
+            WORDPRESS_DB_HOST: db
+            WORDPRESS_DB_USER: wpuser
+            WORDPRESS_DB_PASSWORD: redhat
+            WORDPRESS_DB_NAME: wordpress
+            WORDPRESS_DB_PREFIX: kk_
+    haproxy:
+        image: haproxy
+        volumes:
+            - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+        
+        links:
+            - wp1:wp1
+            - wp2:wp2
+        ports:
+            - 80:5555
+        restart: always
